@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        canvas{
+            border:2px dashed deepskyblue;
+            display: block;
+            margin:50px auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas></canvas>
+    <script src="tween.js"></script>
+    <script>
+
+        <!-- 获取画布-->
+
+        var canvas=document.querySelector('canvas');
+
+        var ps=canvas.getContext('2d');
+
+        var width=800;
+        var height=300;
+        canvas.width=width;
+        canvas.height=height;
+
+//        创建构造函数
+
+        var particle={
+
+//            定时器
+            sid:0,
+
+//            初始化一个对象属性用来存放目标像素坐标
+            init:[],
+
+//            画一个最初的图案
+            render:function(txt){
+
+                ps.beginPath();
+
+                ps.textAlign='center';
+                ps.font='italic 120px 新宋体';
+                ps.fillStyle='rgb('+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*156)+','+Math.floor(Math.random()*26)+')';
+
+
+                ps.fillText(txt,width/2,height/2);
+                return this;
+
+            },
+
+//            获取相应的像素坐标
+            getPosition: function () {
+                var num=3;
+
+                var arr=this.init;
+
+                var data=ps.getImageData(0,0,width,height).data;
+
+                for(var y=1;y<=height;y+=num){
+
+                    for(var x=1;x<=width;x+=num){
+
+                        var index=((y-1)*width+x)*4-1;  //每个xy对应四个像素点（rgba），而data内存储的像素点索引值从0开始的
+                                                        //所以减1，得到的是xy的透明度的索引值
+
+                        var red=data[index-3];
+                        var green=data[index-2];
+                        var blue=data[index-1];
+                        var opacity=data[index];
+
+                        if(opacity>0){
+                            arr.push({
+                                x:x,
+                                y:y,
+                                rX:parseInt(Math.random()*width),
+                                rY:parseInt(Math.random()*height)
+                            })
+                        }
+
+
+
+                    }
+                }
+
+
+                return this;
+            },
+
+//            根据获得的像素值的地址，画图
+
+            pinter: function () {
+
+                if(this.sid) return ;
+
+//                先清空画布
+                ps.clearRect(0,0,width,height);
+
+                var arr=this.init;
+                ps.font='normal 10px 萝莉体';
+
+//                要使用动画，先获取四个值，初始时间，初始状态值，改变值，结束时间
+
+                var startTime=0;
+                var endTime=200;
+
+                var timer=setInterval(function(){
+//                    先清空画布
+                    ps.clearRect(0,0,width,height);
+
+                    startTime+=3;
+
+                    if(startTime>endTime){
+
+                        startTime=endTime;
+                        clearInterval(timer);
+
+                       particle.sid=0;
+                    }
+
+
+                   for(var i=0;i<arr.length;i++){
+
+                       var array=arr[i];
+                       var x=Tween.Back.easeOut(startTime,array.rX,array.x-array.rX,endTime);
+                       var y=Tween.Back.easeOut(startTime,array.rY,array.y-array.rY,endTime);
+
+                       ps.beginPath();
+
+                       ps.fillStyle='rgb('+Math.floor(Math.random()*256)+','+Math.floor(Math.random()*156)+','+Math.floor(Math.random()*26)+')';
+
+                       ps.fillText('*',x,y);
+
+                       ps.fill();
+
+                   }
+
+
+
+
+                },20);
+
+
+//                this.sid=1;
+            }
+
+        };
+
+
+        particle.render('无曳不疯狂');
+
+        canvas.onmouseover=function(){
+            ps.clearRect(0,0,width,height);
+            particle.init=[];
+            particle.render('无曳不疯狂').getPosition().pinter();
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </script>
+</body>
+</html>
